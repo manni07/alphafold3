@@ -135,21 +135,40 @@ class ChemicalComponentsData:
     """Returns chemical components data as a dict suitable for `mmcif.Mmcif`."""
     mmcif_dict = {}
 
-    mmcif_fields = set()
-    for entry in self.chem_comp.values():
-      for field, value in vars(entry).items():
-        if value:
-          mmcif_fields.add(field)
     chem_comp_ids = []
+    chem_comp_types = []
+    chem_comp_names = []
+    chem_comp_pdbx_synonyms = []
+    chem_comp_formulas = []
+    chem_comp_formula_weights = []
+    chem_comp_mon_nstd_flags = []
+    chem_comp_pdbx_smiles = []
+
     for component_id in sorted(self.chem_comp):
       entry = self.chem_comp[component_id]
       chem_comp_ids.append(component_id)
-      for field in mmcif_fields:
-        mmcif_dict.setdefault(f'_chem_comp.{field}', []).append(
-            getattr(entry, field) or '?'
-        )
+      chem_comp_types.append(entry.type)
+      chem_comp_names.append(entry.name)
+      chem_comp_pdbx_synonyms.append(entry.pdbx_synonyms)
+      chem_comp_formulas.append(entry.formula)
+      chem_comp_formula_weights.append(entry.formula_weight)
+      chem_comp_mon_nstd_flags.append(entry.mon_nstd_flag)
+      chem_comp_pdbx_smiles.append(entry.pdbx_smiles)
+
     if chem_comp_ids:
       mmcif_dict['_chem_comp.id'] = chem_comp_ids
+      mmcif_dict['_chem_comp.type'] = chem_comp_types
+      mmcif_dict['_chem_comp.name'] = chem_comp_names
+      mmcif_dict['_chem_comp.pdbx_synonyms'] = chem_comp_pdbx_synonyms
+      mmcif_dict['_chem_comp.formula'] = chem_comp_formulas
+      mmcif_dict['_chem_comp.formula_weight'] = chem_comp_formula_weights
+      mmcif_dict['_chem_comp.mon_nstd_flag'] = chem_comp_mon_nstd_flags
+
+      if not all((v is None for v in chem_comp_pdbx_smiles)):
+        mmcif_dict['_chem_comp.pdbx_smiles'] = [
+            v or '?' for v in chem_comp_pdbx_smiles
+        ]
+
     return mmcif_dict
 
 
